@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAC Reclamation Kontact</title>
+    <!-- Use Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter font for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS to define the color palette as Tailwind cannot handle custom colors natively in this context */
+        :root {
+            --harvard-crimson: #C90015;
+            --alizarin-crimson: #E52736;
+            --electric-crimson: #FE0040;
+            --cream: #FFFED2;
+            --flavescent: #FFEF97;
+        }
+
+        /* Set a custom font family and a global background color */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cream);
+        }
+
+        /* Customize scrollbar for a smoother look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--harvard-crimson);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body class="p-4 flex flex-col items-center min-h-screen">
+
+    <!-- Form container with crimson and cream color scheme -->
+    <div class="form-container w-full max-w-2xl bg-[var(--flavescent)] p-8 md:p-12 rounded-lg shadow-xl border border-[var(--harvard-crimson)]">
+        <h1 class="text-3xl font-bold text-center text-[var(--harvard-crimson)] mb-6">MAC Reclamation Kontact</h1>
+        <form id="reclamationForm" class="space-y-6">
+            <div class="form-group">
+                <label for="macLiaisonNupe" class="block mb-2 font-bold text-[var(--alizarin-crimson)]">MAC Liason Nupe</label>
+                <input type="text" id="macLiaisonNupe" name="macLiaisonNupe" required class="w-full p-3 border border-[var(--alizarin-crimson)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--harvard-crimson)]">
+            </div>
+            <div class="form-group">
+                <label for="nupeContacted" class="block mb-2 font-bold text-[var(--alizarin-crimson)]">Nupe Contacted</label>
+                <input type="text" id="nupeContacted" name="nupeContacted" required class="w-full p-3 border border-[var(--alizarin-crimson)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--harvard-crimson)]">
+            </div>
+            <div class="form-group">
+                <label for="dateContacted" class="block mb-2 font-bold text-[var(--alizarin-crimson)]">Date contacted</label>
+                <input type="date" id="dateContacted" name="dateContacted" required class="w-full p-3 border border-[var(--alizarin-crimson)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--harvard-crimson)]">
+            </div>
+            <div class="form-group">
+                <label for="phoneNumber" class="block mb-2 font-bold text-[var(--alizarin-crimson)]">Phone Number</label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" class="w-full p-3 border border-[var(--alizarin-crimson)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--harvard-crimson)]">
+            </div>
+            <div class="form-group">
+                <label for="contactType" class="block mb-2 font-bold text-[var(--alizarin-crimson)]">Type of Contact</label>
+                <select id="contactType" name="contactType" class="w-full p-3 border border-[var(--alizarin-crimson)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--harvard-crimson)]">
+                    <option value="Text">Text</option>
+                    <option value="Call">Call</option>
+                    <option value="In Person">In Person</option>
+                    <option value="Email">Email</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="comments" class="block mb-2 font-bold text-[var(--alizarin-crimson)]">Comments</label>
+                <div class="relative">
+                    <textarea id="comments" name="comments" rows="4" class="w-full p-3 border border-[var(--alizarin-crimson)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--harvard-crimson)]"></textarea>
+                    <button type="button" id="generateCommentBtn" class="absolute bottom-2 right-2 px-4 py-2 bg-[var(--harvard-crimson)] text-white text-xs font-bold rounded-md hover:bg-[var(--electric-crimson)] transition-colors">
+                        Generate Comment ✨
+                    </button>
+                </div>
+                <div id="statusMessage" class="mt-2 text-sm text-gray-500"></div>
+            </div>
+            <div class="flex flex-col space-y-4">
+                <button type="submit" class="w-full p-4 bg-[var(--harvard-crimson)] text-white font-bold rounded-md shadow-lg hover:bg-[var(--electric-crimson)] transition-colors">Submit</button>
+                <button type="button" id="clearFormBtn" class="w-full p-4 bg-gray-400 text-white font-bold rounded-md shadow-lg hover:bg-gray-500 transition-colors">Clear Form</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Container for data display and export button -->
+    <div class="data-container w-full max-w-5xl mt-8 p-8 bg-white rounded-lg shadow-xl border border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Submitted Contacts</h2>
+        <div class="flex justify-end mb-4">
+            <button id="exportBtn" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Export to CSV</button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full table-auto border-collapse">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="p-3 text-left text-sm font-semibold text-gray-600 border-b">MAC Liason</th>
+                        <th class="p-3 text-left text-sm font-semibold text-gray-600 border-b">Nupe Contacted</th>
+                        <th class="p-3 text-left text-sm font-semibold text-gray-600 border-b">Date Contacted</th>
+                        <th class="p-3 text-left text-sm font-semibold text-gray-600 border-b">Phone</th>
+                        <th class="p-3 text-left text-sm font-semibold text-gray-600 border-b">Type</th>
+                        <th class="p-3 text-left text-sm font-semibold text-gray-600 border-b">Comments</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody" class="divide-y divide-gray-200">
+                    <!-- Data will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- New section for the summary feature -->
+    <div class="summary-container w-full max-w-5xl mt-8 p-8 bg-white rounded-lg shadow-xl border border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Contact Summary</h2>
+        <div class="mb-4">
+            <label for="summaryQuery" class="block mb-2 font-bold text-gray-700">Summarize by (e.g., "August 2024" or "the last 3 months")</label>
+            <div class="flex items-center space-x-2">
+                <input type="text" id="summaryQuery" placeholder="e.g., 'all contacts in 2024'" class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="button" id="generateSummaryBtn" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition-colors">Generate Summary</button>
+            </div>
+        </div>
+        <div id="summaryOutput" class="p-4 bg-gray-100 rounded-md text-gray-800 whitespace-pre-wrap">
+            <!-- Summary will be displayed here -->
+        </div>
+        <div id="summaryStatus" class="mt-2 text-sm text-gray-500"></div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Global variables provided by the Canvas environment for Firebase
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth, userId;
+        const statusMessageDiv = document.getElementById('statusMessage');
+        const summaryStatusDiv = document.getElementById('summaryStatus');
+
+        // Function to safely initialize and authenticate Firebase
+        const initializeFirebase = async () => {
+            try {
+                // Initialize Firebase app
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Authenticate the user
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                // Set the user ID for Firestore operations
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                console.log("Firebase initialized and authenticated successfully.");
+
+                // Set up real-time listener for the data table
+                setupRealtimeListener();
+
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                statusMessageDiv.textContent = "Error initializing Firebase. Please try again.";
+                summaryStatusDiv.textContent = "Error initializing Firebase. Please try again.";
+            }
+        };
+
+        // Function to setup a real-time listener for Firestore data
+        const setupRealtimeListener = () => {
+            if (!db || !userId) {
+                console.error("Database not ready or user not authenticated.");
+                return;
+            }
+
+            // Create a reference to the specific collection for this user and app
+            const collectionPath = `/artifacts/${appId}/users/${userId}/reclamation_data`;
+            const reclamationCollection = collection(db, collectionPath);
+            
+            // Set up a real-time listener to automatically update the UI when data changes
+            onSnapshot(reclamationCollection, (snapshot) => {
+                const dataTableBody = document.getElementById('dataTableBody');
+                dataTableBody.innerHTML = ''; // Clear existing data
+
+                const contacts = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    contacts.push(data);
+                });
+
+                // Sort the contacts by date
+                contacts.sort((a, b) => new Date(b.dateContacted) - new Date(a.dateContacted));
+
+                contacts.forEach((data) => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 transition-colors';
+                    row.innerHTML = `
+                        <td class="p-3 text-sm text-gray-700">${data.macLiaisonNupe}</td>
+                        <td class="p-3 text-sm text-gray-700">${data.nupeContacted}</td>
+                        <td class="p-3 text-sm text-gray-700">${data.dateContacted}</td>
+                        <td class="p-3 text-sm text-gray-700">${data.phoneNumber}</td>
+                        <td class="p-3 text-sm text-gray-700">${data.contactType}</td>
+                        <td class="p-3 text-sm text-gray-700">${data.comments}</td>
+                    `;
+                    dataTableBody.appendChild(row);
+                });
+                console.log("Data table updated with real-time data.");
+            }, (error) => {
+                console.error("Error fetching real-time data:", error);
+                statusMessageDiv.textContent = "Error fetching real-time data.";
+            });
+        };
+
+        // Handle form submission
+        document.getElementById('reclamationForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+            
+            if (!db) {
+                console.error("Firebase not initialized. Cannot submit form.");
+                return;
+            }
+
+            // Get form data
+            const formData = {
+                macLiaisonNupe: document.getElementById('macLiaisonNupe').value,
+                nupeContacted: document.getElementById('nupeContacted').value,
+                dateContacted: document.getElementById('dateContacted').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                contactType: document.getElementById('contactType').value,
+                comments: document.getElementById('comments').value,
+            };
+
+            // Add a timestamp for ordering
+            formData.timestamp = new Date().toISOString();
+
+            // Save data to Firestore
+            try {
+                const collectionPath = `/artifacts/${appId}/users/${userId}/reclamation_data`;
+                await addDoc(collection(db, collectionPath), formData);
+                console.log("Document successfully written!");
+                
+                // Reset the form after successful submission
+                document.getElementById('reclamationForm').reset();
+                statusMessageDiv.textContent = "Contact submitted successfully!";
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                statusMessageDiv.textContent = "Error submitting contact. Please try again.";
+            }
+        });
+
+        // Handle form clearing
+        document.getElementById('clearFormBtn').addEventListener('click', () => {
+            document.getElementById('reclamationForm').reset();
+            statusMessageDiv.textContent = "";
+        });
+
+        // Handle CSV export
+        document.getElementById('exportBtn').addEventListener('click', async () => {
+            if (!db) {
+                console.error("Firebase not initialized. Cannot export data.");
+                return;
+            }
+
+            try {
+                const collectionPath = `/artifacts/${appId}/users/${userId}/reclamation_data`;
+                const querySnapshot = await getDocs(collection(db, collectionPath));
+                
+                if (querySnapshot.empty) {
+                    console.log("No data to export.");
+                    statusMessageDiv.textContent = "No data to export.";
+                    return;
+                }
+
+                // Create CSV header from the field names
+                const headers = ["MAC Liason Nupe", "Nupe Contacted", "Date Contacted", "Phone Number", "Type of Contact", "Comments"];
+                let csvContent = headers.join(",") + "\n";
+
+                // Add each document as a new row
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const row = [
+                        data.macLiaisonNupe,
+                        data.nupeContacted,
+                        data.dateContacted,
+                        data.phoneNumber,
+                        data.contactType,
+                        // Escape quotes and newlines in comments
+                        `"${data.comments.replace(/"/g, '""').replace(/\n/g, ' ')}"`
+                    ];
+                    csvContent += row.join(",") + "\n";
+                });
+
+                // Create a Blob and a temporary link to download the file
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = "reclamation_kontact_data.csv";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                console.log("CSV file successfully exported.");
+                statusMessageDiv.textContent = "Data exported to CSV successfully!";
+            } catch (error) {
+                console.error("Error exporting data:", error);
+                statusMessageDiv.textContent = "Error exporting data. Please try again.";
+            }
+        });
+
+        // Function to generate a comment using the Gemini API
+        document.getElementById('generateCommentBtn').addEventListener('click', async () => {
+            const macLiaison = document.getElementById('macLiaisonNupe').value;
+            const nupeContacted = document.getElementById('nupeContacted').value;
+            const dateContacted = document.getElementById('dateContacted').value;
+            const contactType = document.getElementById('contactType').value;
+
+            // Check if essential fields are filled
+            if (!macLiaison || !nupeContacted || !dateContacted) {
+                statusMessageDiv.textContent = "Please fill in the 'MAC Liason Nupe', 'Nupe Contacted', and 'Date contacted' fields first.";
+                return;
+            }
+
+            statusMessageDiv.textContent = "Generating comment...";
+            
+            // Construct the prompt for the LLM
+            const prompt = `You are an assistant for a MAC Reclamation contact form. The user wants to generate a professional and brief comment for a contact record. 
+                            The contact details are as follows:
+                            MAC Liaison Nupe: ${macLiaison}
+                            Nupe Contacted: ${nupeContacted}
+                            Date Contacted: ${dateContacted}
+                            Type of Contact: ${contactType}
+                            
+                            Please write a short, one-sentence comment based on these details. The comment should be a simple, professional summary of the interaction. Do not include a greeting or sign-off. The response must be a single sentence only.`;
+
+            // Use the Gemini API to get a response
+            try {
+                const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API response error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    
+                    const text = result.candidates[0].content.parts[0].text;
+                    document.getElementById('comments').value = text.trim();
+                    statusMessageDiv.textContent = "Comment generated successfully!";
+                } else {
+                    statusMessageDiv.textContent = "Could not generate comment. The response was empty.";
+                    console.error("Gemini API response was empty or malformed.");
+                }
+
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                statusMessageDiv.textContent = "Error generating comment. Please try again.";
+            }
+        });
+
+        // Function to generate a summary using the Gemini API
+        document.getElementById('generateSummaryBtn').addEventListener('click', async () => {
+            const summaryQuery = document.getElementById('summaryQuery').value;
+            const summaryOutputDiv = document.getElementById('summaryOutput');
+            summaryStatusDiv.textContent = "Fetching contacts and generating summary...";
+            summaryOutputDiv.textContent = "";
+
+            if (!db) {
+                console.error("Firebase not initialized. Cannot generate summary.");
+                summaryStatusDiv.textContent = "Error: App not initialized. Please refresh.";
+                return;
+            }
+
+            try {
+                // Fetch all contacts from Firestore
+                const collectionPath = `/artifacts/${appId}/users/${userId}/reclamation_data`;
+                const querySnapshot = await getDocs(collection(db, collectionPath));
+                
+                if (querySnapshot.empty) {
+                    summaryStatusDiv.textContent = "No contacts found to summarize.";
+                    return;
+                }
+
+                const contacts = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    contacts.push({
+                        macLiaisonNupe: data.macLiaisonNupe,
+                        nupeContacted: data.nupeContacted,
+                        dateContacted: data.dateContacted,
+                        contactType: data.contactType,
+                        comments: data.comments
+                    });
+                });
+                
+                // Construct the prompt for the LLM
+                const prompt = `You are a professional assistant for summarizing contact records. A user wants to summarize their contacts based on the following query: "${summaryQuery}".
+                                Here is the contact data in a JSON format: ${JSON.stringify(contacts)}.
+                                
+                                Please provide a concise, well-structured summary of the contacts. Focus on the total number of contacts, the most active Nupe Liaisons, the most common types of contact, and any notable interactions mentioned in the comments. Do not include a greeting or sign-off. The response should be in a single paragraph, no longer than 150 words.`;
+
+                // Use the Gemini API to get a response
+                const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API response error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    
+                    const text = result.candidates[0].content.parts[0].text;
+                    summaryOutputDiv.textContent = text.trim();
+                    summaryStatusDiv.textContent = "Summary generated successfully!";
+                } else {
+                    summaryOutputDiv.textContent = "Could not generate summary. The response was empty.";
+                    summaryStatusDiv.textContent = "Error generating summary.";
+                    console.error("Gemini API response was empty or malformed.");
+                }
+
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                summaryStatusDiv.textContent = "Error generating summary. Please try again.";
+            }
+        });
+
+        // Initialize Firebase on window load
+        window.onload = initializeFirebase;
+    </script>
+</body>
